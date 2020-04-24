@@ -1,7 +1,13 @@
 import request from 'supertest';
 import app from '../../src/app';
 
+import truncate from '../utils/truncate';
+
 describe('User', () => {
+  beforeEach(async () => {
+    await truncate();
+  });
+
   it('should be able to register', async () => {
     const response = await request(app)
       .post('/users')
@@ -11,5 +17,24 @@ describe('User', () => {
         password_hash: '123456',
       });
     expect(response.body).toHaveProperty('id');
+  });
+
+  it('should not be able to regiter with duplicated email', async () => {
+    await request(app)
+      .post('/users')
+      .send({
+        name: 'pedro Bufulin',
+        email: 'pedrohba18@gmail.com',
+        password_hash: '123456',
+      });
+
+    const response = await request(app)
+      .post('/users')
+      .send({
+        name: 'pedro Bufulin',
+        email: 'pedrohba18@gmail.com',
+        password_hash: '123456',
+      });
+    expect(response.status).toBe(400);
   });
 });
